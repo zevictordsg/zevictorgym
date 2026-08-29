@@ -40,3 +40,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# arquivos de transferência/backup usados durante o desenvolvimento — nunca
+# deveriam ir pro repositório (zips antigos, telas descartadas etc.)
+/_to_delete/

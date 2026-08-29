@@ -5,7 +5,7 @@ import Image from "next/image";
 import { motion, type Variants } from "framer-motion";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { DiscordIcon, InstagramIcon, TikTokIcon } from "./icons";
+import { DiscordIcon, InstagramIcon, SpotifyIcon, TikTokIcon } from "./icons";
 
 /**
  * Página de links pessoal ("link-in-bio") — fica na raiz do site (`/`), com
@@ -87,6 +87,15 @@ const LINKS: LinkItem[] = [
     subtitle: "@zevictor.gym",
     icon: TikTokIcon,
     color: MONO,
+    external: true,
+  },
+  {
+    key: "spotify",
+    href: "https://open.spotify.com/playlist/2vt8Hqptib0TcdL1BldIqv?si=9992160f6e3e4f9e",
+    label: "Playlist H4K3AD4",
+    subtitle: "Playlist brutal que direciona o carbo",
+    icon: SpotifyIcon,
+    color: "#1db954",
     external: true,
   },
 ];

@@ -1,0 +1,123 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------
+   Carbmaxxing — Design Tokens
+   Extraídos diretamente do arquivo Figma (MCP) em 2026-08-25.
+   Tema padrão do funil = CLARO (fundo branco). Algumas telas
+   pontuais (VSL e o voucher) são escuras de propósito — ver
+   `bare`/`theme` em cada step no funnel-steps.tsx.
+------------------------------------------------------------------ */
+
+:root {
+  --background: #ffffff;
+  --foreground: #111111;
+  --foreground-strong: #444444;
+  --muted: #939393;
+  --muted-2: #6c6c6c;
+
+  --brand-green: #2cc571;
+  --brand-green-deep: #34c16d;
+  --cta-green-from: #8cd868;
+  --cta-green-to: #61be35;
+  --cta-green-border: #6ab448;
+
+  --pill-green-bg: #ebfef5;
+  --pill-green-border: #9ed8bd;
+  --pill-green-text: #5dad96;
+
+  --check-green-bg: #ebfef5;
+  --check-green-border: #cde8db;
+  --check-green-title: #69bda3;
+  --check-green-text: #277462;
+
+  --check-red-bg: #fef2f2;
+  --check-red-border: #f7d3d3;
+  --check-red-title: #d65a5c;
+  --check-red-text: #d65a5c;
+
+  --soft-red-bg: rgba(255, 178, 178, 0.2);
+  --soft-red-border: rgba(236, 120, 120, 0.1);
+  --soft-red-text: #8d0000;
+
+  --soft-green-bg: rgba(178, 255, 192, 0.2);
+  --soft-green-border: rgba(178, 255, 192, 0.5);
+  --soft-green-text: #1c7661;
+
+  --callout-red-bg: #fff1f1;
+  --callout-red-border: #e1b0b0;
+  --callout-red-text: #af0000;
+
+  --callout-amber-bg: rgba(255, 245, 178, 0.2);
+  --callout-amber-border: rgba(236, 213, 120, 0.3);
+  --callout-amber-text: #bb8543;
+
+  --dark-card-bg: #242424;
+  --dark-card-chip-bg: #3a3a3a;
+
+  --dark-screen-bg: #171717;
+
+  --whatsapp-bg: #f0f3f4;
+  --whatsapp-bubble-me: #d0fecf;
+
+  --radius-card: 15px;
+  --radius-pill: 999px;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-foreground-strong: var(--foreground-strong);
+  --color-muted: var(--muted);
+  --color-muted-2: var(--muted-2);
+
+  --color-brand-green: var(--brand-green);
+  --color-brand-green-deep: var(--brand-green-deep);
+
+  --color-dark-card-bg: var(--dark-card-bg);
+  --color-dark-screen-bg: var(--dark-screen-bg);
+  --color-whatsapp-bg: var(--whatsapp-bg);
+
+  --radius-card: var(--radius-card);
+  --radius-pill: var(--radius-pill);
+
+  --font-sans: var(--font-instrument-sans);
+  --font-script: var(--font-logo-script);
+}
+
+html,
+body {
+  height: 100%;
+  background: var(--background);
+  color: var(--foreground);
+}
+
+body {
+  font-family: var(--font-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior-y: none;
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* CTA principal do funil — gradiente verde replicado do Figma */
+.cta-gradient {
+  background-image: linear-gradient(
+    258deg,
+    var(--cta-green-from) 8.9%,
+    var(--cta-green-to) 91%
+  );
+  border: 1px solid var(--cta-green-border);
+}

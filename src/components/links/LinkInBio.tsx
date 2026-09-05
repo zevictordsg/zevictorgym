@@ -5,7 +5,7 @@ import Image from "next/image";
 import { motion, type Variants } from "framer-motion";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { DiscordIcon, InstagramIcon, SpotifyIcon, TikTokIcon } from "./icons";
+import { DiscordIcon, SpotifyIcon } from "./icons";
 
 /**
  * Página de links pessoal ("link-in-bio") — fica na raiz do site (`/`), com
@@ -50,9 +50,10 @@ type LinkItem = {
 const MONO = "#d4d4d4";
 
 const LINKS: LinkItem[] = [
-  // "planilha" removida por enquanto — o usuário quer usar o link já, antes
-  // da planilha ficar pronta. É só reinserir o objeto (o estilo `primary`
-  // do card já está pronto e vai voltar a funcionar sozinho).
+  // Instagram e TikTok removidos a pedido do usuário — o primeiro card
+  // (gratuito, a planilha) é o destaque agora; ver `PlanilhaCard` abaixo,
+  // renderizado antes deste `.map` em vez de entrar nessa lista genérica
+  // (o layout do card dele é todo diferente de um `LinkRow` comum).
   {
     key: "auralab",
     href: "https://apps.apple.com/br/app/auralab/id6794130003",
@@ -69,24 +70,6 @@ const LINKS: LinkItem[] = [
     subtitle: "Entre na comunidade do Carbmaxxing",
     icon: DiscordIcon,
     color: "#5865f2",
-    external: true,
-  },
-  {
-    key: "instagram",
-    href: "https://www.instagram.com/zevictor.gym/",
-    label: "Instagram",
-    subtitle: "@zevictor.gym",
-    icon: InstagramIcon,
-    color: MONO,
-    external: true,
-  },
-  {
-    key: "tiktok",
-    href: "https://www.tiktok.com/@zevictor.gym",
-    label: "TikTok",
-    subtitle: "@zevictor.gym",
-    icon: TikTokIcon,
-    color: MONO,
     external: true,
   },
   {
@@ -229,6 +212,92 @@ function LinkRow({ data }: { data: LinkItem }) {
   );
 }
 
+/**
+ * Card de destaque da planilha gratuita — primeiro item da lista, com
+ * estrutura própria (bem diferente do `LinkRow` genérico dos outros links):
+ * mockup 3D do livro no topo, esmaecendo pra preto, tag "[Gratuita]",
+ * título, subtítulo e um botão pílula branco "Quero Acessar".
+ *
+ * Estrutura 1:1 com o node do Figma (Aura 2.0, "Frame 1171276589",
+ * node-id 2536:63): mesma composição imagem→gradiente→tag→título→
+ * subtítulo→pílula, usando `bgcard.webp` (mockup mono/prateado do livro,
+ * 2216×3004 — mesma peça já usada como capa desse PDF na área de membros).
+ *
+ * A janela da imagem é mais baixa que a altura natural dela nessa largura
+ * (~518px num card de 382px ⇒ ~311px, uns 40% a menos): a imagem continua
+ * inteira por trás, só "a janela" encolhe, com `object-top` — o livro já
+ * começa colado no topo do próprio arquivo `bgcard.webp` (sem margem
+ * morta acima dele), então esse corte mais curto tira exatamente o excesso
+ * de baixo (lombada + preto vazio) e deixa o card mais compacto sem
+ * cortar título/subtítulo, igual à referência do Figma.
+ *
+ * Animação/hairline/hover seguem a mesma linguagem do `LinkRow` (fio de
+ * luz no topo, `whileHover`/`whileTap`, cantos arredondados com borda
+ * translúcida) — só a escala e a composição interna que mudam por ser o
+ * card principal da página.
+ */
+function PlanilhaCard() {
+  return (
+    <motion.a
+      href="/planilhadohack"
+      variants={item}
+      whileHover={{ y: -2 }}
+      whileTap={{ scale: 0.97 }}
+      transition={{ type: "spring", stiffness: 400, damping: 28 }}
+      className="group relative flex w-full flex-col justify-end overflow-hidden rounded-[28px] border border-white/[0.14] bg-black"
+    >
+      {/* fio de luz no topo do card — mesmo detalhe dos outros cards */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 z-10 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent"
+      />
+
+      {/* mockup do livro, esmaecendo pra preto até virar o bloco de texto —
+          altura fixa menor que a natural da imagem (ver comentário acima),
+          cortando o excesso de baixo por trás da máscara do card */}
+      <div className="relative h-[311px] w-full shrink-0 overflow-hidden">
+        {/* imagem + gradiente dentro do MESMO wrapper que recebe o scale do
+            hover — assim os dois crescem juntos e o gradiente nunca fica
+            "para trás" revelando um pedaço não-esmaecido da imagem (bug
+            de quando só a imagem escalava e o gradiente ficava parado) */}
+        <div className="absolute inset-0 transition-transform duration-500 ease-out group-hover:scale-[1.03]">
+          <Image
+            src="/images/bgcard.webp"
+            alt="Como Montar Sua Própria Dieta — planilha gratuita"
+            fill
+            sizes="(max-width: 430px) 100vw, 430px"
+            priority
+            className="object-cover object-top"
+          />
+          <div
+            aria-hidden
+            className="absolute inset-0"
+            style={{ backgroundImage: "linear-gradient(to bottom, transparent 0%, transparent 55%, #000 96%)" }}
+          />
+        </div>
+      </div>
+
+      <div className="relative z-10 -mt-6 flex flex-col gap-4 px-6 pb-6">
+        <div className="flex flex-col gap-1 text-white">
+          <p className="text-[13px] font-bold tracking-[-0.2px]">[Gratuita]</p>
+          <p className="text-[27px] font-bold leading-[1.08] tracking-[-0.6px]">
+            Planilha de Dieta
+          </p>
+        </div>
+
+        <p className="text-[13px] font-medium leading-[1.4] text-white/55">
+          Entenda como secar e ganhar músculo enquanto come muito mais!
+        </p>
+
+        <span className="mt-1 inline-flex w-fit items-center gap-1.5 rounded-[999px] bg-white px-4 py-2 text-[16px] font-bold text-black/70 transition-colors duration-200 group-hover:text-black">
+          Quero Acessar
+          <ArrowRight className="h-4 w-4" />
+        </span>
+      </div>
+    </motion.a>
+  );
+}
+
 export function LinkInBio() {
   // O navegador só promove o elemento pra uma camada de composição própria
   // (necessária pro mix-blend-mode) quando ele começa a pintar — nos
@@ -330,6 +399,7 @@ export function LinkInBio() {
 
         {/* mt-10: mais respiro ainda entre o bloco @/frase e os botões */}
         <div className="relative z-10 mt-10 flex w-full flex-col gap-3">
+          <PlanilhaCard />
           {LINKS.map((l) => (
             <LinkRow key={l.key} data={l} />
           ))}

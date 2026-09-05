@@ -8,6 +8,8 @@ export type FunnelAnswers = {
   pesoAtual?: number;
   pesoMeta?: number;
   nivelAtividade?: string;
+  /** capturado na Screen09FinalOffer — usado pra criar a conta na área de membros (carbb) */
+  email?: string;
   // demais respostas do quiz entram aqui como chaves livres
   [key: string]: string | number | undefined;
 };
@@ -21,24 +23,35 @@ type FunnelState = {
   /** id do lead salvo no Supabase, preenchido assim que capturamos o primeiro dado */
   leadId: string | null;
   hasHydrated: boolean;
+  /**
+   * Timestamp (Date.now()) de quando a "sessão de urgência" começou —
+   * usado pra derivar as vagas/vouchers restantes (ver useSpotsRemaining)
+   * de um jeito determinístico e IGUAL em qualquer tela que leia o hook,
+   * em vez de cada tela ter seu próprio contador local desincronizado.
+   * Persistido, então um refresh no meio do funil não "reseta" a contagem
+   * pra cima (o que ia parecer estranho pro usuário).
+   */
+  spotsSessionStartedAt: number | null;
 
   goNext: (lastIndex: number) => void;
   goBack: () => void;
   goTo: (index: number) => void;
   setAnswer: (key: string, value: string | number | undefined) => void;
   setLeadId: (id: string) => void;
+  ensureSpotsSessionStarted: () => void;
   reset: () => void;
   setHasHydrated: (state: boolean) => void;
 };
 
 export const useFunnelStore = create<FunnelState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       currentIndex: 0,
       direction: 1,
       answers: {},
       leadId: null,
       hasHydrated: false,
+      spotsSessionStartedAt: null,
 
       goNext: (lastIndex) =>
         set((state) => ({
@@ -63,7 +76,14 @@ export const useFunnelStore = create<FunnelState>()(
 
       setLeadId: (id) => set({ leadId: id }),
 
-      reset: () => set({ currentIndex: 0, direction: 1, answers: {}, leadId: null }),
+      ensureSpotsSessionStarted: () => {
+        if (get().spotsSessionStartedAt == null) {
+          set({ spotsSessionStartedAt: Date.now() });
+        }
+      },
+
+      reset: () =>
+        set({ currentIndex: 0, direction: 1, answers: {}, leadId: null, spotsSessionStartedAt: null }),
 
       setHasHydrated: (value) => set({ hasHydrated: value }),
     }),
@@ -74,6 +94,7 @@ export const useFunnelStore = create<FunnelState>()(
         currentIndex: state.currentIndex,
         answers: state.answers,
         leadId: state.leadId,
+        spotsSessionStartedAt: state.spotsSessionStartedAt,
       }),
       onRehydrateStorage: () => (state) => {
         state?.setHasHydrated(true);

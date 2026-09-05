@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { BadgeCheck, Mic, Pause, Phone, Play, Send, Smile, Video } from "lucide-react";
+import { useSpotsRemaining } from "@/hooks/useSpotsRemaining";
 import type { FunnelScreenProps } from "../types";
 
 /**
@@ -24,7 +25,7 @@ type Block = {
   options: string[];
   /** só o Bloco 1 usa isso — legenda "toque para responder" acima da opção */
   hint?: boolean;
-  /** Bloco 7 — mostra o contador de vagas restantes (valor ao vivo, ver useSpotsCountdown) */
+  /** Bloco 7 — mostra o contador de vagas restantes (valor ao vivo, ver useSpotsRemaining) */
   showSpotsCounter?: boolean;
   /** Bloco 9 — não é mais uma resposta de chat, é a navegação pra próxima tela */
   isFinal?: boolean;
@@ -35,8 +36,11 @@ const text = (t: string): MessageContent => ({ kind: "text", text: t });
 const BLOCKS: Block[] = [
   {
     id: "opening",
-    messages: [text("Oi! Aqui é o Zé 👋"), text("Vi que você acabou de pedir a planilha")],
-    options: ["Isso mesmo 👊"],
+    messages: [
+      text("Fala monstro! Na paz?"),
+      text("Vi aqui que você tá querendo acessar a planilha gratuita do hack de macros."),
+    ],
+    options: ["Isso mesmo"],
     hint: true,
   },
   {
@@ -50,62 +54,34 @@ const BLOCKS: Block[] = [
     options: ["Ganhar massa", "Secar", "Os dois"],
   },
   {
-    id: "confirm",
+    id: "remember-calculator",
     messages: [
       text("Boa, é o que a maioria aqui busca também"),
-      text("Sua planilha já tá garantida, só mais um passinho aqui e ela é sua"),
-    ],
-    options: ["Bora, qual passo?"],
-  },
-  {
-    id: "gap",
-    messages: [
-      text("Só um adianto: quando ela chegar, você vai ver os números certos pra seguir"),
       text(
-        'Mas ela sozinha não te explica o PORQUÊ: por que às vezes você come "certo" e mesmo assim não vê resultado'
+        "Deixa eu te perguntar uma coisa, você lembra do acesso à calculadora que falei no vídeo?"
       ),
     ],
-    options: ["Comigo é assim 😅"],
-  },
-  {
-    id: "introduce-opportunity",
-    messages: [
-      text(
-        "Pois é. Foi exatamente pra resolver isso que eu gravei uma sequência de aulas explicando o método inteiro"
-      ),
-      text("Só que não é algo que eu deixo aberto pra qualquer um"),
-    ],
-    options: ["Por quê?"],
-  },
-  {
-    id: "audio",
-    messages: [{ kind: "audio", src: "/audio/audioze.mp3" }],
-    options: ["Quero saber mais"],
+    options: ["Sim lembro"],
   },
   {
     id: "offer-reveal",
     messages: [
-      text(
-        "As aulas explicam o método completo: o motivo real por trás dos seus números, não só a planilha pronta"
-      ),
-      text("Abri 50 vagas pra quem pegou a planilha nessa leva"),
+      text("Perfeito, acho que tu tá com sorte hoje."),
+      { kind: "audio", src: "/audio/audioze2.mp3" },
+      text("E aí, tu vai deixar passar?"),
     ],
-    // TODO: quando existir backend, trocar useSpotsCountdown por uma leitura real da contagem de vagas.
+    // TODO: quando existir backend, trocar useSpotsRemaining por uma leitura real da contagem de vagas.
     showSpotsCounter: true,
-    options: ["Quero garantir minha vaga"],
-  },
-  {
-    id: "reinforce",
-    messages: [
-      text("Não tem pegadinha: você vê o método completo, no seu tempo, direto comigo"),
-      text("Só não posso deixar aberto pra sempre, senão vira só mais um curso engavetado"),
-    ],
-    options: ["Bora, quero entender"],
+    options: ["Quero o acesso", "Quero só a planilha mesmo"],
   },
   {
     id: "transition",
-    messages: [text("Deixa eu te mostrar rapidinho o que muda de verdade se você entrar, ou se não entrar")],
-    options: ["Ver os dois caminhos →"],
+    messages: [
+      text(
+        "Boa demais irmão, ótima escolha, só continuar aqui que já vai entender como ter o acesso."
+      ),
+    ],
+    options: ["Continuar →"],
     isFinal: true,
   },
 ];
@@ -141,47 +117,16 @@ function timeForIndex(i: number) {
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
 
-const INITIAL_SPOTS = 37;
-const MIN_SPOTS = 21;
-
-/**
- * Contagem de vagas caindo aos poucos, mesmo espírito do contador ao vivo da
- * primeira tela — intervalos aleatórios, para num piso pra não zerar a
- * promessa da oferta. TODO: quando existir backend, trocar por leitura real.
- */
-function useSpotsCountdown(start: number, floor: number) {
-  const [spots, setSpots] = useState(start);
-
-  useEffect(() => {
-    let cancelled = false;
-    let current = start;
-
-    function scheduleNext() {
-      if (current <= floor) return;
-      const delay = 6000 + Math.random() * 9000;
-      window.setTimeout(() => {
-        if (cancelled) return;
-        current = Math.max(floor, current - 1);
-        setSpots(current);
-        scheduleNext();
-      }, delay);
-    }
-
-    scheduleNext();
-    return () => {
-      cancelled = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  return spots;
-}
-
 const WAVEFORM = [6, 10, 14, 8, 16, 12, 7, 18, 10, 14, 9, 6, 15, 11, 8, 17, 12, 6, 10, 14, 9, 16, 7, 12, 8, 5];
 const PLACEHOLDER_AUDIO_DURATION = 26;
 
-/** Balão de áudio estilo nota de voz do WhatsApp — play/pause + waveform + duração. */
-function AudioBubble({ src }: { src: string }) {
+/**
+ * Balão de áudio estilo nota de voz do WhatsApp — play/pause + waveform +
+ * duração. `onEnded` é opcional e só é passado pelo balão que está travando
+ * o fluxo (ver `awaitingAudio` no componente principal): dispara quando o
+ * áudio toca até o fim de verdade, não só quando aparece na tela.
+ */
+function AudioBubble({ src, onEnded }: { src: string; onEnded?: () => void }) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -198,6 +143,7 @@ function AudioBubble({ src }: { src: string }) {
     const onEnd = () => {
       setPlaying(false);
       setProgress(0);
+      onEnded?.();
     };
 
     audio.addEventListener("timeupdate", onTime);
@@ -208,7 +154,10 @@ function AudioBubble({ src }: { src: string }) {
       audio.removeEventListener("loadedmetadata", onLoaded);
       audio.removeEventListener("ended", onEnd);
     };
-  }, []);
+    // `onEnded` entra nas deps de propósito: uma vez que o áudio já
+    // destravou o fluxo, `onEnded` vira `undefined` e um replay não deve
+    // avançar o step de novo.
+  }, [onEnded]);
 
   function toggle() {
     const audio = audioRef.current;
@@ -262,8 +211,13 @@ export function Screen05WhatsApp({ onNext, onBack }: FunnelScreenProps) {
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [stepIndex, setStepIndex] = useState(0);
   const [typing, setTyping] = useState<"none" | "text" | "audio">("none");
+  // Trava o fluxo assim que o balão de áudio é revelado: a próxima mensagem
+  // (e a opção de resposta que vem depois dela) só aparece quando o áudio
+  // tocar até o fim de verdade — ver `handleAudioEnded` e o `onEnded` que é
+  // repassado pro AudioBubble mais abaixo.
+  const [awaitingAudio, setAwaitingAudio] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const spotsRemaining = useSpotsCountdown(INITIAL_SPOTS, MIN_SPOTS);
+  const spotsRemaining = useSpotsRemaining();
 
   useEffect(() => {
     const step = STEPS[stepIndex];
@@ -286,7 +240,11 @@ export function Screen05WhatsApp({ onNext, onBack }: FunnelScreenProps) {
           ? { type: "friend-text", text: step.content.text, time: timeForIndex(h.length) }
           : { type: "friend-audio", src: step.content.src, time: timeForIndex(h.length) },
       ]);
-      setStepIndex((i) => i + 1);
+      if (isAudio) {
+        setAwaitingAudio(true);
+      } else {
+        setStepIndex((i) => i + 1);
+      }
     }, delay);
 
     return () => {
@@ -294,6 +252,11 @@ export function Screen05WhatsApp({ onNext, onBack }: FunnelScreenProps) {
       window.clearTimeout(revealTimer);
     };
   }, [stepIndex]);
+
+  function handleAudioEnded() {
+    setAwaitingAudio(false);
+    setStepIndex((i) => i + 1);
+  }
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -364,6 +327,10 @@ export function Screen05WhatsApp({ onNext, onBack }: FunnelScreenProps) {
           }
 
           if (item.type === "friend-audio") {
+            // Só o balão que está de fato travando o fluxo recebe o
+            // callback — depois que ele já destravou (ou se for um áudio
+            // antigo no histórico), tocar de novo não deve mexer no step.
+            const isGating = awaitingAudio && i === history.length - 1;
             return (
               <motion.div
                 key={i}
@@ -372,7 +339,7 @@ export function Screen05WhatsApp({ onNext, onBack }: FunnelScreenProps) {
                 transition={{ duration: 0.22 }}
                 className="flex justify-start"
               >
-                <AudioBubble src={item.src} />
+                <AudioBubble src={item.src} onEnded={isGating ? handleAudioEnded : undefined} />
               </motion.div>
             );
           }

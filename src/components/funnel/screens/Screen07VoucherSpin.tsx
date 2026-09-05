@@ -5,6 +5,7 @@ import Image from "next/image";
 import { motion, type Variants } from "framer-motion";
 import { Star } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { useSpotsRemaining } from "@/hooks/useSpotsRemaining";
 import type { FunnelScreenProps } from "../types";
 
 // estrelinhas ambiente espalhadas pela tela toda (não só nos cantos) —
@@ -66,6 +67,10 @@ const CONFETTI = Array.from({ length: 32 }, (_, i) => {
 
 export function Screen07VoucherSpin({ onNext }: FunnelScreenProps) {
   const [redeemed, setRedeemed] = useState(false);
+  // Mesmo número ao vivo mostrado no chat do WhatsApp (Screen05) — antes essa
+  // tela tinha um "39" fixo, bem diferente do que o usuário acabou de ver
+  // cair pra 4 no chat, o que quebrava a credibilidade da urgência.
+  const spotsRemaining = useSpotsRemaining();
 
   function handleRedeem() {
     if (redeemed) {
@@ -141,7 +146,7 @@ export function Screen07VoucherSpin({ onNext }: FunnelScreenProps) {
         </div>
 
         <p className="max-w-[330px] text-center text-[18px] leading-[1.4] text-[#d4d4d4]/80">
-          <span className="font-bold">Restam apenas 39 Vouchers</span> até 50
+          <span className="font-bold">Restam apenas {spotsRemaining} Vouchers</span> até 50
           membros. Clique em Resgatar Agora.
         </p>
       </motion.div>
@@ -183,7 +188,9 @@ export function Screen07VoucherSpin({ onNext }: FunnelScreenProps) {
             <Image src="/images/card1.svg" alt="" fill className="pointer-events-none select-none" />
           </div>
 
-          {/* face de trás: desconto liberado (card3 já vem com a arte completa) */}
+          {/* face de trás: desconto liberado (card32 já vem com a arte
+              completa, incluindo o texto "Calculadora da Elite" — sem
+              sobreposição HTML aqui, é tudo baked no próprio arquivo) */}
           <div
             className="absolute inset-0"
             style={{
@@ -192,7 +199,7 @@ export function Screen07VoucherSpin({ onNext }: FunnelScreenProps) {
               WebkitBackfaceVisibility: "hidden",
             }}
           >
-            <Image src="/images/card3.svg" alt="" fill className="pointer-events-none select-none" />
+            <Image src="/images/card32.svg" alt="" fill className="pointer-events-none select-none" />
           </div>
         </motion.div>
 

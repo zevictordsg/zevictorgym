@@ -188,7 +188,7 @@ export function Screen08ObjectionBreak({ onNext }: FunnelScreenProps) {
           className="bg-background px-5 pb-[calc(env(safe-area-inset-bottom)+16px)] pt-2"
         >
           <Button onClick={onNext} icon={<ArrowRight className="h-3.5 w-3.5" />}>
-            Quero o material mais completo!
+            Acessar meus materiais
           </Button>
         </motion.div>
       </div>

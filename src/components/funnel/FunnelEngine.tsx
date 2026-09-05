@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { FunnelShell } from "./FunnelShell";
 import { FUNNEL_STEPS } from "@/data/funnel-steps";
 import { useFunnelStore } from "@/store/funnel-store";
+import { useLeadSync } from "@/hooks/useLeadSync";
 
 const variants = {
   enter: (direction: 1 | -1) => ({ x: direction > 0 ? 48 : -48, opacity: 0 }),
@@ -17,6 +18,10 @@ export function FunnelEngine() {
   const hasHydrated = useFunnelStore((s) => s.hasHydrated);
   const goNext = useFunnelStore((s) => s.goNext);
   const goBack = useFunnelStore((s) => s.goBack);
+
+  // Manda cada troca de etapa pro backend (dados de entrada + retenção por
+  // etapa) — ver src/hooks/useLeadSync.ts e supabase/schema.sql.
+  useLeadSync();
 
   if (!hasHydrated) {
     return <div className="h-full bg-background" />;

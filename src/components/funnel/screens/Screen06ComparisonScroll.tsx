@@ -17,6 +17,19 @@ const BENEFITS = [
   "A cada refeição seus músculos agradecem",
 ];
 
+// Opostos diretos de cada item de BENEFITS, na mesma ordem — usados no card
+// "SEM APLICAR O CARBMAXXING" (antes reaproveitava a lista positiva com
+// ícone de "x", o que ficava contraditório: dizia "sem aplicar" mas listava
+// benefícios como se fossem coisas que você TERIA sem aplicar).
+const DRAWBACKS = [
+  "Treinos sem energia nenhuma",
+  "Carboidrato jogado de qualquer jeito",
+  "Inchado até comendo ”certinho”",
+  "Perde músculo junto com a gordura",
+  "Dieta restritiva que você abandona rápido",
+  "A cada refeição só vem culpa e frustração",
+];
+
 /**
  * Como essa tela é a única com scroll intencional, as animações de entrada
  * disparam por `whileInView` (revelam conforme o usuário rola) em vez de
@@ -118,7 +131,7 @@ export function Screen06ComparisonScroll({ onNext }: FunnelScreenProps) {
             </p>
           </motion.div>
           <div className="flex flex-col gap-3">
-            {BENEFITS.map((b) => (
+            {DRAWBACKS.map((b) => (
               <ChecklistRow key={b} positive={false}>
                 {b}
               </ChecklistRow>
@@ -171,12 +184,12 @@ export function Screen06ComparisonScroll({ onNext }: FunnelScreenProps) {
         >
           <p className="text-[18px] font-semibold leading-[1.3]" style={{ color: "var(--callout-amber-text)" }}>
             Você recebeu um voucher premiado por ter sido 1 dos 50 primeiros que
-            chegaram até aqui e não vai sair apenas com uma planilha de dieta 🫡
+            chegaram até aqui e vai conseguir acessar a calculadora com um
+            desconto gigante 🫡
           </p>
           <p className="text-[14px] leading-[1.4] text-[#6c6c6c]">
-            Clique no botão abaixo para ir garantir seu acesso a uma
-            oportunidade única que vai receber{" "}
-            <span className="font-bold">ALÉM DO MATERIAL GRATUITO</span>
+            Clique no botão abaixo para ter acesso à planilha e para garantir
+            sua oportunidade de acessar a calculadora
           </p>
         </BadgeCard>
       </motion.div>
@@ -188,7 +201,7 @@ export function Screen06ComparisonScroll({ onNext }: FunnelScreenProps) {
         variants={fadeUp}
       >
         <Button onClick={onNext} icon={<ArrowRight className="h-3.5 w-3.5" />}>
-          Quero entender mais
+          Quero receber a planilha
         </Button>
       </motion.div>
     </div>

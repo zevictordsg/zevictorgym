@@ -1,24 +1,29 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion, type Variants } from "framer-motion";
-import { Key, Lock, MessageCircle, Shield } from "lucide-react";
+import { Key, Loader2, Lock, MessageCircle, Shield } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { FaqItem } from "@/components/ui/FaqItem";
+import { useFunnelStore } from "@/store/funnel-store";
 import { ArrowRight } from "../icons";
 import type { FunnelScreenProps } from "../types";
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // "O que está incluso" — os dois cards de preço reaproveitam a mesma lista;
 // no card grátis só o primeiro item vem "ativo" (verde), o resto fica opaco
 // pra deixar claro que é conteúdo exclusivo do ELITE — exatamente como no
 // Figma (mesmo ícone verified.svg em ambos, só muda a opacidade do item).
 const INCLUDES = [
-  "Planilha para montar sua própria dieta",
-  "Aulas científicas sobre cada pilar da dieta",
-  "Aulas sobre calorias e cardio para a manutenção perfeita",
-  'Aula desvendando o "hack" de macros',
-  "Distribuição de calorias e refeições livres na prática",
-  "Aulas sobre as bases da dieta para saciedade e prazer",
+  "Calculadora automática",
+  "Macros calculados com base científica",
+  "Sem perder tempo pra montar dieta",
+  "Sua dieta em menos de 4 minutos",
+  "Alinhada aos alimentos da sua casa",
+  "Dieta com refeições livres calculadas",
 ];
 
 // linhas quebradas manualmente (em vez de deixar o texto quebrar sozinho)
@@ -81,7 +86,98 @@ function cnRow(active: boolean) {
   return `flex w-full items-center gap-1.5 ${active ? "" : "opacity-50"}`;
 }
 
+// onNext não é usado: os dois botões navegam de verdade (rota /obrigado ou
+// Stripe Checkout) em vez de avançar pro próximo índice do stepper — essa
+// já é a última tela do funil.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function Screen09FinalOffer({ onNext }: FunnelScreenProps) {
+  const router = useRouter();
+  const answers = useFunnelStore((s) => s.answers);
+  const leadId = useFunnelStore((s) => s.leadId);
+  const setAnswer = useFunnelStore((s) => s.setAnswer);
+
+  const [email, setEmail] = useState("");
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [loadingPath, setLoadingPath] = useState<"pdf" | "elite" | null>(null);
+
+  function validateEmail() {
+    const normalized = email.trim().toLowerCase();
+    if (!normalized || !EMAIL_RE.test(normalized)) {
+      setEmailError("Digite um e-mail válido pra receber seu acesso.");
+      return null;
+    }
+    setEmailError(null);
+    return normalized;
+  }
+
+  async function handleFreeClick() {
+    const normalizedEmail = validateEmail();
+    if (!normalizedEmail || loadingPath) return;
+
+    setLoadingPath("pdf");
+    setAnswer("email", normalizedEmail);
+
+    try {
+      const res = await fetch("/api/enroll", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: normalizedEmail,
+          nome: answers.nome,
+          whatsapp: answers.whatsapp,
+          leadId,
+        }),
+      });
+      const data = (await res.json()) as {
+        ok?: boolean;
+        email?: string;
+        password?: string;
+        error?: string;
+      };
+
+      if (!res.ok || !data.ok) {
+        throw new Error(data.error ?? "não foi possível liberar seu acesso agora");
+      }
+
+      window.sessionStorage.setItem(
+        "carbb_credentials",
+        JSON.stringify({ email: data.email, password: data.password })
+      );
+      router.push("/planilhadohack/obrigado");
+    } catch (error) {
+      console.error("[Screen09FinalOffer] enroll", error);
+      setEmailError("Não conseguimos liberar seu acesso agora. Tenta de novo em instantes.");
+      setLoadingPath(null);
+    }
+  }
+
+  async function handleEliteClick() {
+    const normalizedEmail = validateEmail();
+    if (!normalizedEmail || loadingPath) return;
+
+    setLoadingPath("elite");
+    setAnswer("email", normalizedEmail);
+
+    try {
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: normalizedEmail, leadId }),
+      });
+      const data = (await res.json()) as { url?: string; error?: string };
+
+      if (!res.ok || !data.url) {
+        throw new Error(data.error ?? "não foi possível iniciar o pagamento");
+      }
+
+      window.location.href = data.url;
+    } catch (error) {
+      console.error("[Screen09FinalOffer] checkout", error);
+      setEmailError("Não conseguimos abrir o pagamento agora. Tenta de novo em instantes.");
+      setLoadingPath(null);
+    }
+  }
+
   return (
     <motion.div
       variants={container}
@@ -115,6 +211,35 @@ export function Screen09FinalOffer({ onNext }: FunnelScreenProps) {
           </p>
         </motion.div>
 
+        {/* e-mail — compartilhado pelos dois caminhos (grátis e ELITE): é
+            com ele que a conta na área de membros é criada, então precisa
+            vir preenchido antes de qualquer um dos dois botões abaixo. */}
+        <motion.div variants={item} className="flex w-full flex-col gap-2">
+          <label
+            htmlFor="final-offer-email"
+            className="text-[13px] font-semibold tracking-[-0.39px] text-white/70"
+          >
+            Seu melhor e-mail (pra liberar seu acesso)
+          </label>
+          <input
+            id="final-offer-email"
+            type="email"
+            inputMode="email"
+            autoComplete="email"
+            placeholder="voce@email.com"
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              if (emailError) setEmailError(null);
+            }}
+            className="w-full rounded-[15px] border-2 bg-white px-[15px] py-[14px] text-[15px] text-[#151515] outline-none placeholder:text-[#a0a0a0] focus:border-[var(--brand-green)]"
+            style={{ borderColor: emailError ? "#c40000" : "#e5e5e5" }}
+          />
+          {emailError && (
+            <p className="text-[12px] leading-[1.4] text-[#ff6b6b]">{emailError}</p>
+          )}
+        </motion.div>
+
         {/* card grátis */}
         <motion.div
           variants={item}
@@ -141,8 +266,13 @@ export function Screen09FinalOffer({ onNext }: FunnelScreenProps) {
               <IncludeRow key={label} label={label} active={i === 0} />
             ))}
           </div>
-          <Button variant="dark-gradient" onClick={onNext}>
-            Quero apenas baixar o PDF
+          <Button
+            variant="dark-gradient"
+            onClick={handleFreeClick}
+            disabled={loadingPath !== null}
+            icon={loadingPath === "pdf" ? <Loader2 className="h-4 w-4 animate-spin" /> : undefined}
+          >
+            {loadingPath === "pdf" ? "Liberando acesso..." : "Quero apenas baixar o PDF"}
           </Button>
         </motion.div>
 
@@ -160,7 +290,17 @@ export function Screen09FinalOffer({ onNext }: FunnelScreenProps) {
           <div className="relative aspect-[290/77] w-full max-w-[240px] self-center">
             <Image src="/images/logo2.svg" alt="Carbmaxxing ELITE" fill className="object-contain" />
           </div>
+          {/* "Calculadora" — o texto "Elite Carbmaxxing" já vem desenhado como
+              vetor dentro do logo2.svg (sem <text> editável), então esse
+              complemento é uma sobreposição HTML por baixo da arte, não uma
+              edição do arquivo em si. */}
+          <p className="-mt-2 w-full text-center text-[15px] font-bold tracking-tight text-[#151515]">
+            Calculadora
+          </p>
           <div className="flex flex-col gap-2 leading-[1.1] text-[#151515]">
+            <p className="text-[15px] font-medium text-[#151515]/40 line-through">
+              R$147,90
+            </p>
             <div className="flex items-end gap-1">
               <span className="text-[24px] font-semibold tracking-[-0.96px]">R$</span>
               <span className="text-[44px] font-semibold tracking-[-1.76px]">47,90</span>
@@ -181,8 +321,19 @@ export function Screen09FinalOffer({ onNext }: FunnelScreenProps) {
               <IncludeRow key={label} label={label} active />
             ))}
           </div>
-          <Button variant="brand" onClick={onNext} icon={<ArrowRight className="h-3.5 w-3.5" />}>
-            Entrar na ELITE Carbmaxxing
+          <Button
+            variant="brand"
+            onClick={handleEliteClick}
+            disabled={loadingPath !== null}
+            icon={
+              loadingPath === "elite" ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <ArrowRight className="h-3.5 w-3.5" />
+              )
+            }
+          >
+            {loadingPath === "elite" ? "Abrindo pagamento..." : "Quero o PDF e a Calculadora"}
           </Button>
         </motion.div>
 
@@ -226,10 +377,10 @@ export function Screen09FinalOffer({ onNext }: FunnelScreenProps) {
           </p>
         </motion.div>
 
-        {/* CTA WhatsApp — número de placeholder, troque pelo real do consultor */}
+        {/* CTA WhatsApp */}
         <motion.div variants={item}>
           <a
-            href="https://wa.me/5500000000000"
+            href="https://wa.me/5518996026528?text=Salve%20Z%C3%A9%2C%20quero%20tirar%20duvidas%20sobre%20a%20calculadora%20de%20dieta!"
             target="_blank"
             rel="noopener noreferrer"
             className="flex w-full items-center justify-center gap-2.5 rounded-[15px] bg-[#25D366] px-[15px] py-[15px] text-[16px] font-medium tracking-tight text-white shadow-[0_4px_7.95px_rgba(0,0,0,0.1)] transition-[filter] hover:brightness-105"

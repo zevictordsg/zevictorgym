@@ -68,8 +68,8 @@ export function Screen04ModelComparison({ onNext }: FunnelScreenProps) {
         variants={item}
         className="text-center text-[15px] font-medium leading-[1.4] text-foreground/50"
       >
-        E esse resultado é através de um hack que eu aplico na minha dieta e
-        que está sinalizado abaixo 👇
+        E tudo foi feito com base em testes que eu mesmo já fiz, e o com
+        mais resultados é o sinalizado abaixo👇
       </motion.p>
 
       <motion.div
@@ -168,7 +168,7 @@ export function Screen04ModelComparison({ onNext }: FunnelScreenProps) {
 
       <motion.div variants={item}>
         <Button onClick={onNext} icon={<ArrowRight className="h-3.5 w-3.5" />}>
-          Quero entender mais
+          Quero acessar a planilha com o hack
         </Button>
       </motion.div>
     </motion.div>

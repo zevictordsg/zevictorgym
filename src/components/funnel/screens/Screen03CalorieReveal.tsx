@@ -142,7 +142,8 @@ export function Screen03CalorieReveal({ onNext }: FunnelScreenProps) {
         className="flex min-h-0 flex-1 flex-col items-center justify-center gap-2.5 text-center"
       >
         <h2 className="text-[24px] font-semibold leading-[1.15] tracking-tight text-foreground-strong">
-          Aplicando o &ldquo;hack&rdquo; você terá mais{" "}
+          Aplicando o &ldquo;hack&rdquo; mostrado dentro da planilha você
+          terá mais{" "}
           <span className="text-brand-green-deep">1000 kcal</span> diárias de
           forma direcionada
         </h2>

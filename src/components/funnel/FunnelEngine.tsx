@@ -36,8 +36,9 @@ export function FunnelEngine() {
       bare={step.bare}
       theme={step.theme}
       progress={step.bare ? undefined : progress}
-      showBack={currentIndex > 0}
-      onBack={goBack}
+      // O lead só avança no funil — sem seta de voltar em lugar nenhum
+      // (nem no header padrão, nem no overlay das telas "bare").
+      showBack={false}
     >
       <AnimatePresence mode="wait" custom={direction} initial={false}>
         <motion.div

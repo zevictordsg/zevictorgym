@@ -110,11 +110,12 @@ const TEXT_TYPING_DELAY = 850;
 const AUDIO_TYPING_DELAY = 1300;
 const FIRST_MESSAGE_EXTRA_DELAY = 450;
 
-function timeForIndex(i: number) {
-  const totalMinutes = 9 * 60 + 14 + i;
-  const h = Math.floor(totalMinutes / 60) % 24;
-  const m = totalMinutes % 60;
-  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+/** Horário real do momento em que a mensagem entra no histórico — nada de
+ * relógio falso fixo, cada balão carimba a hora local de verdade de quem
+ * está vendo a tela. */
+function nowTime() {
+  const now = new Date();
+  return `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
 }
 
 const WAVEFORM = [6, 10, 14, 8, 16, 12, 7, 18, 10, 14, 9, 6, 15, 11, 8, 17, 12, 6, 10, 14, 9, 16, 7, 12, 8, 5];
@@ -207,7 +208,7 @@ function AudioBubble({ src, onEnded }: { src: string; onEnded?: () => void }) {
   );
 }
 
-export function Screen05WhatsApp({ onNext, onBack }: FunnelScreenProps) {
+export function Screen05WhatsApp({ onNext }: FunnelScreenProps) {
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [stepIndex, setStepIndex] = useState(0);
   const [typing, setTyping] = useState<"none" | "text" | "audio">("none");
@@ -237,8 +238,8 @@ export function Screen05WhatsApp({ onNext, onBack }: FunnelScreenProps) {
       setHistory((h) => [
         ...h,
         step.content.kind === "text"
-          ? { type: "friend-text", text: step.content.text, time: timeForIndex(h.length) }
-          : { type: "friend-audio", src: step.content.src, time: timeForIndex(h.length) },
+          ? { type: "friend-text", text: step.content.text, time: nowTime() }
+          : { type: "friend-audio", src: step.content.src, time: nowTime() },
       ]);
       if (isAudio) {
         setAwaitingAudio(true);
@@ -269,7 +270,7 @@ export function Screen05WhatsApp({ onNext, onBack }: FunnelScreenProps) {
       onNext();
       return;
     }
-    setHistory((h) => [...h, { type: "me", text: label, time: timeForIndex(h.length) }]);
+    setHistory((h) => [...h, { type: "me", text: label, time: nowTime() }]);
     setStepIndex((i) => i + 1);
   }
 
@@ -282,9 +283,8 @@ export function Screen05WhatsApp({ onNext, onBack }: FunnelScreenProps) {
         className="flex shrink-0 items-center justify-between bg-white px-5 pb-3 pt-[calc(env(safe-area-inset-top)+12px)]"
       >
         <div className="flex items-center gap-2.5">
-          <button onClick={onBack} className="mr-1 text-[#111]/40">
-            <span className="sr-only">Voltar</span>‹
-          </button>
+          {/* Sem seta de voltar de propósito — o lead só avança no funil,
+              não navega pra tela anterior (ver FunnelEngine: showBack sempre false). */}
           <span className="relative h-9 w-9 shrink-0 overflow-hidden rounded-full bg-[#e4e4e4]">
             <Image src="/perfilze.jpg" alt="Zé Victor" fill sizes="36px" className="object-cover" />
           </span>

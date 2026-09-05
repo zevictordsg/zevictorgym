@@ -139,7 +139,7 @@ export function Screen01Hook({ onNext }: FunnelScreenProps) {
         <motion.div variants={item} className="w-full">
           <Callout tone="danger" className="text-[13px] font-semibold opacity-50">
             Aqui você vai ter acesso à estrutura de dieta que eu realmente testei
-            na prática, não um copia do gpt.
+            na prática, não uma cópia do GPT.
           </Callout>
         </motion.div>
 

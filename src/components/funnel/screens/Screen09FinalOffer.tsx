@@ -86,6 +86,17 @@ function cnRow(active: boolean) {
   return `flex w-full items-center gap-1.5 ${active ? "" : "opacity-50"}`;
 }
 
+/** Data de hoje no formato DD/MM/AAAA — o aviso de validade do desconto
+ * sempre se refere ao dia em que a pessoa está vendo a tela, não uma data
+ * fixa. */
+function todayFormatted() {
+  const now = new Date();
+  const dd = String(now.getDate()).padStart(2, "0");
+  const mm = String(now.getMonth() + 1).padStart(2, "0");
+  const yyyy = now.getFullYear();
+  return `${dd}/${mm}/${yyyy}`;
+}
+
 // onNext não é usado: os dois botões navegam de verdade (rota /obrigado ou
 // Stripe Checkout) em vez de avançar pro próximo índice do stepper — essa
 // já é a última tela do funil.
@@ -195,7 +206,7 @@ export function Screen09FinalOffer({ onNext }: FunnelScreenProps) {
           style={{ background: "#fff5b2", borderColor: "rgba(236,213,120,0.3)", color: "#bb8543" }}
         >
           Este desconto é aplicável somente no dia que foi resgatado o
-          voucher 11/08/2026
+          voucher {todayFormatted()}
         </motion.div>
 
         <motion.div variants={item} className="flex flex-col gap-3 text-center text-white">

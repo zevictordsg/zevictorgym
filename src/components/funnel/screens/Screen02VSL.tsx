@@ -14,9 +14,12 @@ import type { FunnelScreenProps } from "../types";
  * Figma (que é só o mockup "idle") — o wordmark ocupa o lugar dele até o
  * CTA aparecer, quando os dois trocam de lugar com um crossfade.
  *
- * O pitch de vendas dentro do vídeo começa aos 3min48s — o CTA só aparece
- * depois disso (`revealCtaAfterSeconds`), pra não oferecer "Continuar"
- * antes do vídeo ter feito o trabalho de convencer.
+ * O pitch de vendas começa aos 3min48s NO CONTEÚDO do vídeo (`pitchStartsAtSeconds`)
+ * — mas o player na VTurb está configurado pra tocar em `videoPlaybackSpeed`
+ * (1.3x), então o tempo real de parede até chegar nesse ponto é menor.
+ * `revealCtaAfterSeconds` já vem dividido pela velocidade — se a velocidade
+ * mudar de novo no painel da VTurb, só precisa atualizar `videoPlaybackSpeed`
+ * aqui, sem precisar recalcular o timer na mão.
  * TODO: isso é um timer fixo (assume que o vídeo começou a tocar assim que
  * a tela montou, sem contar pausas) — não um listener real do progresso do
  * player. Trocar por um evento de progresso da VTurb se/quando o SDK deles
@@ -35,7 +38,9 @@ import type { FunnelScreenProps } from "../types";
 const VTURB_PLAYER_ID = "vid-6a9bb538f5882a0f8e3b448e";
 const VTURB_PLAYER_SRC =
   "https://scripts.converteai.net/a4150f7c-18fa-4974-9849-7f2765acd263/players/6a9bb538f5882a0f8e3b448e/v4/player.js";
-const revealCtaAfterSeconds = 3 * 60 + 48; // 3:48 — quando o pitch começa no vídeo
+const pitchStartsAtSeconds = 3 * 60 + 48; // 3:48 — quando o pitch começa NO CONTEÚDO do vídeo
+const videoPlaybackSpeed = 1.3; // velocidade configurada no player da VTurb
+const revealCtaAfterSeconds = pitchStartsAtSeconds / videoPlaybackSpeed; // ≈ 2:55 de tempo real
 
 const container: Variants = {
   hidden: {},

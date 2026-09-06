@@ -1,8 +1,13 @@
 import "server-only";
 import { createClient } from "@supabase/supabase-js";
 
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+// `.trim()` é defensivo: variáveis de ambiente coladas em painéis (Vercel,
+// etc.) às vezes carregam um espaço/quebra de linha invisível no fim, e o
+// Supabase client aceita a URL sem reclamar na hora de criar o client — só
+// quebra depois, numa chamada real, com um erro genérico tipo "Invalid path
+// specified in request URL" que não aponta pra causa.
+const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
 
 /**
  * Cliente Supabase com a `service_role` key — SOMENTE em route handlers /

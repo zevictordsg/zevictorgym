@@ -14,7 +14,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
  */
 export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}));
-  const priceId = body.priceId ?? process.env.STRIPE_PRICE_ID_ELITE;
+  const priceId = (body.priceId ?? process.env.STRIPE_PRICE_ID_ELITE)?.trim();
   // `leadId` pode chegar como null/"" (ex: leads/funnel_events ainda não
   // existem no Supabase do funil, então useLeadSync nunca setou um id) --
   // tratamos como "sem lead" em vez de mandar string vazia pro Stripe

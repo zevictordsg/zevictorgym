@@ -65,7 +65,7 @@ export function Screen03CalorieReveal({ onNext }: FunnelScreenProps) {
   const liveCalories = useStepCount(859, 1642, 500);
 
   return (
-    <div className="flex h-full min-h-0 flex-col justify-between gap-4 bg-background px-5 pb-[calc(env(safe-area-inset-bottom)+16px)] pt-[calc(env(safe-area-inset-top)+20px)]">
+    <div className="flex h-full min-h-0 flex-col justify-start gap-5 bg-background px-5 pb-[calc(env(safe-area-inset-bottom)+16px)] pt-[calc(env(safe-area-inset-top)+20px)]">
       {/* Card de calorias */}
       <motion.div
         initial={{ opacity: 0, y: -12 }}
@@ -126,9 +126,9 @@ export function Screen03CalorieReveal({ onNext }: FunnelScreenProps) {
           (src) => (
             <div
               key={src}
-              className="relative h-[76px] w-[76px] shrink-0 overflow-hidden rounded-[16px] ring-1 ring-black/5"
+              className="relative h-[102px] w-[102px] shrink-0 overflow-hidden rounded-[20px] ring-1 ring-black/5"
             >
-              <Image src={src} alt="" fill sizes="76px" className="object-cover" />
+              <Image src={src} alt="" fill sizes="102px" className="object-cover" />
             </div>
           )
         )}
@@ -139,7 +139,7 @@ export function Screen03CalorieReveal({ onNext }: FunnelScreenProps) {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.28, duration: 0.4 }}
-        className="flex min-h-0 flex-1 flex-col items-center justify-center gap-2.5 text-center"
+        className="flex shrink-0 flex-col items-center gap-2.5 text-center"
       >
         <h2 className="text-[24px] font-semibold leading-[1.15] tracking-tight text-foreground-strong">
           Aplicando o &ldquo;hack&rdquo; mostrado dentro da planilha você
@@ -182,7 +182,7 @@ export function Screen03CalorieReveal({ onNext }: FunnelScreenProps) {
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5, duration: 0.35 }}
-        className="w-full shrink-0"
+        className="mt-auto w-full shrink-0"
       >
         <motion.div
           animate={{ scale: [1, 1.025, 1] }}

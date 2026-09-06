@@ -121,10 +121,25 @@ export function Screen09FinalOffer({ onNext }: FunnelScreenProps) {
     return normalized;
   }
 
+  /**
+   * Loga a intenção de clique (ver `/api/cta-click`) assim que o e-mail já
+   * validou — antes de saber se `/api/enroll`/`/api/checkout` vão dar
+   * certo, pra medir abandono no meio do caminho e não só quem completou.
+   * Fire-and-forget: falha de rede aqui nunca deve travar o clique real.
+   */
+  function logCtaClick(path: "pdf" | "elite") {
+    fetch("/api/cta-click", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ leadId, path }),
+    }).catch(() => {});
+  }
+
   async function handleFreeClick() {
     const normalizedEmail = validateEmail();
     if (!normalizedEmail || loadingPath) return;
 
+    logCtaClick("pdf");
     setLoadingPath("pdf");
     setAnswer("email", normalizedEmail);
 
@@ -166,6 +181,7 @@ export function Screen09FinalOffer({ onNext }: FunnelScreenProps) {
     const normalizedEmail = validateEmail();
     if (!normalizedEmail || loadingPath) return;
 
+    logCtaClick("elite");
     setLoadingPath("elite");
     setAnswer("email", normalizedEmail);
 

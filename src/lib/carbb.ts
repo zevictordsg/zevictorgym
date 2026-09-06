@@ -12,8 +12,11 @@ let carbbAdminClient: SupabaseClient | null = null;
 function getCarbbAdminClient() {
   if (carbbAdminClient) return carbbAdminClient;
 
-  const url = process.env.CARBB_SUPABASE_URL;
-  const serviceRoleKey = process.env.CARBB_SUPABASE_SERVICE_ROLE_KEY;
+  // `.trim()` por segurança — mesma razão do `src/lib/supabase-admin.ts`
+  // (espaço/quebra de linha invisível colado no valor da variável no painel
+  // do Vercel vira "Invalid API key" ou "Invalid path..." só na hora do uso).
+  const url = process.env.CARBB_SUPABASE_URL?.trim();
+  const serviceRoleKey = process.env.CARBB_SUPABASE_SERVICE_ROLE_KEY?.trim();
   if (!url || !serviceRoleKey) {
     throw new Error(
       "CARBB_SUPABASE_URL / CARBB_SUPABASE_SERVICE_ROLE_KEY ausentes — configure o .env.local"

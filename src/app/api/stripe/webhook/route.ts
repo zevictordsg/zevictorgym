@@ -3,6 +3,7 @@ import type Stripe from "stripe";
 import { getStripeClient } from "@/lib/stripe";
 import { getSupabaseAdminClient } from "@/lib/supabase-admin";
 import { grantCarbbAccess } from "@/lib/carbb";
+import { getErrorMessage } from "@/lib/error-message";
 
 /**
  * Webhook do Stripe — chamado depois que o pagamento da oferta ELITE é
@@ -91,11 +92,11 @@ export async function POST(request: Request) {
           .eq("id", leadId);
       }
     } catch (relayError) {
-      console.error("[api/stripe/webhook] falha ao relayar credenciais:", relayError);
+      console.error("[api/stripe/webhook] falha ao relayar credenciais:", getErrorMessage(relayError));
     }
   } catch (error) {
-    const message = error instanceof Error ? error.message : "erro desconhecido";
-    console.error("[api/stripe/webhook]", message);
+    const message = getErrorMessage(error);
+    console.error("[api/stripe/webhook]", message, error);
     return NextResponse.json({ error: message }, { status: 500 });
   }
 

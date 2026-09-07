@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSupabaseAdminClient } from "@/lib/supabase-admin";
 import { grantCarbbAccess } from "@/lib/carbb";
+import { getErrorMessage } from "@/lib/error-message";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -59,8 +60,8 @@ export async function POST(request: Request) {
       accountCreated: result.accountCreated,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "erro desconhecido";
-    console.error("[api/enroll]", message);
+    const message = getErrorMessage(error);
+    console.error("[api/enroll]", message, error);
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
